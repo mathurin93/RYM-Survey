@@ -1,445 +1,440 @@
-'use client'; // This is a client component in Next.js because it has state and interactivity
+'use client';
 
-import React, { useState } from 'react';
-import { Send, CheckCircle, MessageSquare, AlertCircle, ChevronRight, ChevronLeft, Lock, Printer, LayoutList, Users } from 'lucide-react';
-// Note: You will need to install lucide-react in your Next.js project: npm install lucide-react
+import React, { useState, useEffect } from 'react';
+import { 
+  Send, CheckCircle, MessageSquare, AlertCircle, Lightbulb, 
+  ChevronRight, Star, Home, Gamepad2, Lock, Unlock, 
+  ClipboardList, BarChart3, UserCog, Clock, MapPin
+} from 'lucide-react';
 
-export default function YouthConnectSurvey() {
-  const [step, setStep] = useState(0); // 0 = intro, 1-5 = survey pages, 6 = success, 99 = admin login, 100 = admin dashboard
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  
-  // Admin State
-  const [adminPassword, setAdminPassword] = useState('');
-  const [surveyData, setSurveyData] = useState<any[]>([]);
-  const [isLoadingData, setIsLoadingData] = useState(false);
-  const [groupingMode, setGroupingMode] = useState('by_question'); // 'by_question' or 'by_respondent'
+// Safe environment variable getter for browser
+const getEnvVar = (name: string, fallback: string = '') => {
+  if (typeof process !== 'undefined' && process.env) {
+    return process.env[name] || fallback;
+  }
+  return fallback;
+};
 
-  // Initialize form data for all 15 questions
-  const initialFormState = Array.from({ length: 15 }, (_, i) => `q${i + 1}`).reduce((acc: { [key: string]: string }, key) => {
-    acc[key] = '';
-    return acc;
-  }, {});
-  
-  const [formData, setFormData] = useState(initialFormState);
+const supabaseUrl = getEnvVar('NEXT_PUBLIC_SUPABASE_URL', 'https://ivozbmooydyngwaxlsll.supabase.co');
+const supabaseKey = getEnvVar('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_BHjvmp2MLG8dGAtu_gFoiw_HyIeGb7W');
 
-  // Safely check for process.env to avoid errors in browser-only environments
-  const getEnvVar = (key: string, fallback: string) => {
-    if (typeof process !== 'undefined' && process.env) {
-      return process.env[key] || fallback;
-    }
-    return fallback;
+export default function App() {
+  const [activeTab, setActiveTab] = useState('youth'); // 'youth', 'games', 'survey', 'results', 'leader'
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [adminError, setAdminError] = useState('');
+
+  // Tab Navigation Handler
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    window.scrollTo(0, 0);
   };
 
-  // Constants for Supabase
-  const SUPABASE_URL = getEnvVar('NEXT_PUBLIC_SUPABASE_URL', 'https://ivozbmooydyngwaxlsll.supabase.co');
-  const SUPABASE_KEY = getEnvVar('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_BHjvmp2MLG8dGAtu_gFoiw_HyIeGb7W');
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const submitToSupabase = async () => {
-    try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/youth_connect_feedback`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || 'Failed to save to database');
-      }
-      
-      setStep(6); // Success step
-    } catch (err) {
-      console.error('Supabase Error:', err);
-      setError('Something went wrong saving your answers. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (step < 5) {
-      setStep(step + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      setError('');
-      setIsSubmitting(true);
-      submitToSupabase();
-    }
-  };
-
-  // --- ADMIN FUNCTIONS ---
-  
-  const handleAdminLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (adminPassword === 'godislove') {
-      setStep(100);
-      fetchSurveyData();
-    } else {
-      setError('Incorrect password');
-    }
-  };
-
-  const fetchSurveyData = async () => {
-    setIsLoadingData(true);
-    try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/youth_connect_feedback?select=*`, {
-        method: 'GET',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch data');
-      
-      const data = await response.json();
-      setSurveyData(data || []);
-    } catch (err) {
-      console.error(err);
-      setError('Could not load responses. Ensure Supabase SELECT policies are enabled.');
-    } finally {
-      setIsLoadingData(false);
-    }
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const goBack = () => {
-    setStep(step - 1);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // --- QUESTION DATA STRUCTURE ---
-  const questionPages = [
-    // PAGE 1: Vibe & Relevance
-    [
-      { id: 'q1', type: 'text', label: '1. On a scale of 1-5, how relevant do you feel the Youth Connect meetings are to your daily life? (Why or why not?)' },
-      { id: 'q2', type: 'text', label: '2. What is the number one thing that would make you more excited to attend youth meetings?' },
-      { id: 'q3', type: 'text', label: '3. Have you ever felt like this youth ministry wasn\'t a good fit for you? (If yes, what made you feel that way?)' }
-    ],
-    // PAGE 2: Content & Spiritual Growth
-    [
-      { id: 'q4', type: 'text', label: '4. What real-life issues or struggles do you think teenagers face today that the church needs to address?' },
-      { id: 'q5', type: 'text', label: '5. What specific topics or discussions would actually help you grow closer to God right now?' },
-      { id: 'q6', type: 'text', label: '6. What makes it difficult for you to participate or engage when you do attend?' }
-    ],
-    // PAGE 3: Community & Belonging
-    [
-      { id: 'q7', type: 'text', label: '7. Do you feel like you belong and have a community with the youth at our church?' },
-      { id: 'q8', type: 'text', label: '8. How comfortable do you feel sharing your honest thoughts and questions during meetings? (What makes you feel comfortable/uncomfortable?)' },
-      { id: 'q9', type: 'choice', label: '9. Do you feel like your voice and ideas are genuinely heard in this youth ministry?', options: ['Yes, definitely', 'Sometimes', 'Not really', 'No'] }
-    ],
-    // PAGE 4: Activities & Involvement
-    [
-      { id: 'q10', type: 'text', label: '10. What types of activities, events, or hangout styles would you love to see us do more of?' },
-      { id: 'q11', type: 'text', label: '11. Do you have any hobbies, talents, or interests that you wish we incorporated into our meetings?' },
-      { id: 'q12', type: 'choice', label: '12. Do you feel there are enough opportunities for you to use your personal gifts at church?', options: ['Yes', 'Not sure', 'No'] },
-      { id: 'q13', type: 'choice', label: '13. Would you be interested in helping plan future youth events or leading parts of a meeting?', options: ['Yes, I\'d love to!', 'Maybe, depending on what it is', 'No, thanks'] }
-    ],
-    // PAGE 5: Leadership & The Future
-    [
-      { id: 'q14', type: 'text', label: '14. What could the youth leaders do differently to support you and connect with you better?' },
-      { id: 'q15', type: 'text', label: '15. If you were in charge of redesigning this youth ministry, what is the ONE major thing you would change?' }
-    ]
-  ];
-
-  // --- UI COMPONENTS ---
-
-  const IntroScreen = () => (
-    <div className="flex flex-col items-center justify-center text-center space-y-6 py-10 px-4 animate-in fade-in zoom-in duration-500">
-      <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-4 shadow-sm border border-indigo-200">
-        <MessageSquare className="w-10 h-10 text-indigo-600" />
+  // --- ADMIN AUTHENTICATION COMPONENT ---
+  const AdminLogin = () => (
+    <div className="flex flex-col items-center justify-center text-center space-y-6 py-16 px-4 animate-in fade-in duration-300">
+      <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center mb-4">
+        <Lock className="w-10 h-10 text-slate-600" />
       </div>
-      <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
-        Youth Connect
-      </h1>
-      <p className="text-lg text-slate-600 max-w-sm">
-        We want to hear from YOU! Your honest feedback helps us make our meetings better, more engaging, and more relevant.
-      </p>
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 max-w-sm w-full text-left flex items-start gap-3 shadow-sm">
-        <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-amber-900 leading-relaxed">
-          <strong>This survey is 100% anonymous.</strong> Please be open and honest. We won't know who said what, but we are listening to every word!
-        </p>
+      <h2 className="text-2xl font-bold text-gray-900">Leader Access Required</h2>
+      <p className="text-gray-500 text-sm">Please enter the password to view this section.</p>
+      
+      <div className="w-full max-w-xs space-y-4">
+        <input 
+          type="password"
+          value={adminPasswordInput}
+          onChange={(e) => setAdminPasswordInput(e.target.value)}
+          placeholder="Enter password..."
+          className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-slate-600 focus:border-transparent text-center"
+        />
+        {adminError && <p className="text-red-500 text-sm font-medium">{adminError}</p>}
+        <button 
+          onClick={() => {
+            if (adminPasswordInput === 'godislove') {
+              setIsAdminAuthenticated(true);
+              setAdminError('');
+              setAdminPasswordInput('');
+            } else {
+              setAdminError('Incorrect password');
+            }
+          }}
+          className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2"
+        >
+          Unlock <Unlock className="w-5 h-5" />
+        </button>
       </div>
-      <button 
-        onClick={() => setStep(1)}
-        className="w-full max-w-sm bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex items-center justify-center gap-2 mt-6"
-      >
-        Start Survey <ChevronRight className="w-5 h-5" />
-      </button>
-
-      {/* Secret Admin Button */}
-      <button 
-        onClick={() => { setError(''); setStep(99); }}
-        className="mt-8 text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1"
-      >
-        <Lock className="w-3 h-3" /> Youth Leaders Login
-      </button>
     </div>
   );
 
-  const SuccessScreen = () => (
-    <div className="flex flex-col items-center justify-center text-center space-y-6 py-16 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mb-4 shadow-sm border border-emerald-200">
-        <CheckCircle className="w-12 h-12 text-emerald-600" />
-      </div>
-      <h2 className="text-3xl font-extrabold text-slate-900">Thank You!</h2>
-      <p className="text-lg text-slate-600 max-w-sm">
-        Your voice has been heard. We will be reviewing all feedback to make real changes to our Youth Connect meetings.
-      </p>
-      <button 
-        onClick={() => {
-          setFormData(initialFormState);
-          setStep(0);
-        }}
-        className="mt-8 text-indigo-600 font-semibold hover:underline bg-indigo-50 px-6 py-3 rounded-full"
-      >
-        Submit another response
-      </button>
-    </div>
-  );
-
-  const SurveyPage = () => {
-    const currentQuestions = questionPages[step - 1];
-    
-    return (
-      <form onSubmit={handleSubmit} className="space-y-6 animate-in fade-in slide-in-from-right-8 duration-300 pb-12 pt-6">
-        
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex justify-between text-xs font-semibold text-slate-500 mb-2 px-1">
-            <span>Part {step} of 5</span>
-            <span>{Math.round((step / 5) * 100)}% Complete</span>
-          </div>
-          <div className="w-full bg-slate-200 rounded-full h-2.5">
-            <div 
-              className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500 ease-out" 
-              style={{ width: `${(step / 5) * 100}%` }}
-            ></div>
-          </div>
+  // --- YOUTH OUTLINE COMPONENT ---
+  const YouthOutline = () => (
+    <div className="space-y-6 animate-in fade-in duration-300 pb-8">
+      <div className="bg-indigo-600 text-white p-6 rounded-2xl shadow-md">
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">Youth Social</h1>
+        <div className="flex flex-col gap-2 text-indigo-100 text-sm mt-4">
+          <div className="flex items-center gap-2"><Clock className="w-4 h-4"/> Saturday, August 29, 2026 | 7:30 PM</div>
+          <div className="flex items-center gap-2"><MapPin className="w-4 h-4"/> 6 Westwyn Ct, Brampton, ON</div>
         </div>
+      </div>
 
-        <div className="space-y-6">
-          {currentQuestions.map((q) => (
-            <div key={q.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-              <label className="block text-[15px] font-semibold text-slate-900 leading-snug">
-                {q.label}
-              </label>
-              
-              {q.type === 'text' ? (
-                <textarea 
-                  name={q.id}
-                  value={formData[q.id]}
-                  onChange={handleInputChange}
-                  placeholder="Type your answer here..."
-                  className="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-600 focus:border-transparent resize-none h-28 text-slate-700 bg-slate-50"
-                ></textarea>
-              ) : (
-                <div className="space-y-3 pt-1">
-                  {q.options?.map((option) => (
-                    <label key={option} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-colors ${formData[q.id] === option ? 'border-indigo-600 bg-indigo-50/50' : 'border-slate-200 hover:bg-slate-50 bg-white'}`}>
-                      <input 
-                        type="radio" 
-                        name={q.id} 
-                        value={option}
-                        checked={formData[q.id] === option}
-                        onChange={handleInputChange}
-                        className="w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-600"
-                      />
-                      <span className="text-slate-700 font-medium">{option}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
+      <div className="space-y-4">
+        {[
+          { time: "7:30 PM", title: "Gather & Snacks", desc: "Arrival time! Grab some snacks, find a seat, and hang out before we kick things off." },
+          { time: "7:45 PM", title: "Welcome & Vision", desc: "Kicking off the night with prayer and a quick word on why we are here." },
+          { time: "7:55 PM", title: "Ice Breakers & Games", desc: "Bring your A-game! We have some wild challenges and real prizes on the line." },
+          { time: "8:30 PM", title: "Feedback Focus", desc: "Scan the QR code to fill out a quick survey on Matt's app. Tell us what you want to see!" },
+          { time: "8:45 PM", title: "Food & Fellowship", desc: "Time to eat, hang out, and chill." },
+          { time: "9:30 PM", title: "Wrap Up & Prizes", desc: "Final grand prizes are handed out, followed by closing remarks and prayer from Pastor Blair." },
+          { time: "9:45 PM", title: "Dismissal", desc: "See you next time!" }
+        ].map((item, idx) => (
+          <div key={idx} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4 items-start">
+            <div className="bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-lg text-sm whitespace-nowrap mt-1">
+              {item.time}
             </div>
-          ))}
-        </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm font-medium flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            {error}
+            <div>
+              <h3 className="font-bold text-gray-900">{item.title}</h3>
+              <p className="text-sm text-gray-600 mt-1">{item.desc}</p>
+            </div>
           </div>
-        )}
+        ))}
+      </div>
+    </div>
+  );
 
-        <div className="flex gap-3 pt-4">
-          <button 
-            type="button"
-            onClick={goBack}
-            className="w-1/3 bg-white text-slate-700 font-bold py-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 flex items-center justify-center shadow-sm"
-          >
-            <ChevronLeft className="w-5 h-5" /> Back
-          </button>
+  // --- GAMES COMPONENT ---
+  const GamesGuide = () => (
+    <div className="space-y-8 animate-in fade-in duration-300 pb-8">
+      <div className="space-y-2">
+        <h2 className="text-3xl font-extrabold text-gray-900">Game Rules</h2>
+        <p className="text-gray-500 text-sm">How to play tonight's challenges.</p>
+      </div>
 
-          <button 
-            type="submit"
-            disabled={isSubmitting}
-            className={`w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center justify-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
-          >
-            {isSubmitting ? 'Saving...' : (step === 5 ? 'Submit Survey' : 'Next Part')} 
-            {!isSubmitting && (step === 5 ? <Send className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />)}
-          </button>
+      {/* Game 1 */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+        <h3 className="font-bold text-lg text-indigo-600 border-b pb-2">1. "Who Am I?" Sticky Note Mingle</h3>
+        <p className="text-sm text-gray-700"><strong>The Goal:</strong> Figure out which famous Bible character is stuck to your forehead/back.</p>
+        <p className="text-sm text-gray-700"><strong>The Rules:</strong> You must walk around the room and ask each other ONLY "Yes" or "No" questions (e.g., "Am I in the Old Testament?", "Am I a king?").</p>
+        <p className="text-sm font-bold text-amber-600 bg-amber-50 p-2 rounded-lg">Win: The first 3 people to correctly guess their character run to the leaders for a prize!</p>
+      </div>
+
+      {/* Game 2 */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+        <h3 className="font-bold text-lg text-indigo-600 border-b pb-2">2. Emoji Bible Stories</h3>
+        <p className="text-sm text-gray-700 mb-4"><strong>The Rules:</strong> First to shout out the correct Bible story for the emojis wins!</p>
+        <ul className="space-y-4 text-2xl bg-slate-50 p-4 rounded-xl text-center">
+          <li>🍎🐍👩👨</li>
+          <li>🦁🕳️🙏👨</li>
+          <li>🌊🚶‍♂️⛵😲</li>
+          <li>🍞🐟🐟🧺👦</li>
+          <li>🐋🏃‍♂️🤢🏖️</li>
+          <li>👦🌈🧥😠👦👦</li>
+        </ul>
+      </div>
+
+      {/* Game 3 */}
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+        <h3 className="font-bold text-lg text-indigo-600 border-b pb-2">3. Fact or Fiction: Bizarre Bible Edition</h3>
+        <p className="text-sm text-gray-700"><strong>The Rules:</strong> Stand in the middle. When the statement is read, run LEFT if it's a real Bible story (FACT), or RIGHT if it's made up (FICTION). Wrong guess = sit down. Last ones standing win grand prizes!</p>
+      </div>
+    </div>
+  );
+
+  // --- LEADER OUTLINE COMPONENT ---
+  const LeaderOutline = () => (
+    <div className="space-y-6 animate-in fade-in duration-300 pb-8">
+      <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-md flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold mb-1">Leader Agenda</h1>
+          <p className="text-slate-300 text-sm">Confidential - Staff Only</p>
         </div>
+        <UserCog className="w-8 h-8 text-slate-400" />
+      </div>
+
+      <div className="space-y-6 text-sm text-gray-800">
         
+        {/* 7:30 */}
+        <div className="bg-white p-4 rounded-xl border-l-4 border-slate-500 shadow-sm">
+          <h3 className="font-bold text-lg text-gray-900 mb-2">7:30 PM | Gather & Snacks</h3>
+          <p className="font-semibold text-indigo-600 mb-2">All Leaders</p>
+          <p className="text-gray-600">Welcome students as they arrive, direct them to snacks, and mingle.</p>
+        </div>
+
+        {/* 7:45 */}
+        <div className="bg-white p-4 rounded-xl border-l-4 border-indigo-500 shadow-sm">
+          <h3 className="font-bold text-lg text-gray-900 mb-2">7:45 PM | Welcome, Vision & Prayer</h3>
+          <p className="font-semibold text-indigo-600 mb-2">Leaders: Matt & Latoya</p>
+          <ul className="list-disc pl-5 space-y-1 text-gray-600">
+            <li><strong>Action:</strong> Welcome students, set tone. Share vision (building community, faith, support).</li>
+            <li><strong>Prayer:</strong> Latoya leads opening prayer to dedicate the night.</li>
+          </ul>
+        </div>
+
+        {/* 7:55 */}
+        <div className="bg-white p-4 rounded-xl border-l-4 border-amber-500 shadow-sm">
+          <h3 className="font-bold text-lg text-gray-900 mb-2">7:55 PM | Ice Breakers & Games</h3>
+          <p className="font-semibold text-indigo-600 mb-2">Leaders: Bethany & Jalesa</p>
+          <div className="space-y-3 text-gray-600 mt-3">
+            <p><strong>Game 1: Who Am I?</strong> <br/>Prep: Write names (David, Esther, Moses, Peter, Goliath, Mary, Judas) on sticky notes. Place on backs/foreheads. Yes/No questions only.</p>
+            <p><strong>Game 2: Emoji Stories</strong> <br/>Adam/Eve, Daniel/Lions, Jesus/Water, Feeding 5000, Jonah, Joseph/Coat.</p>
+            <p><strong>Game 3: Fact or Fiction</strong> <br/>
+              - Eutychus falls from window (Fact - Acts 20)<br/>
+              - Healing blind with sand (Fiction - Mud/spit John 9)<br/>
+              - Talking donkey (Fact - Numbers 22)<br/>
+              - David uses flaming arrow (Fiction - Slingshot 1 Sam 17)<br/>
+              - Bald prophet/Bears (Fact - 2 Kings 2)
+            </p>
+          </div>
+        </div>
+
+        {/* 8:30 */}
+        <div className="bg-white p-4 rounded-xl border-l-4 border-emerald-500 shadow-sm">
+          <h3 className="font-bold text-lg text-gray-900 mb-2">8:30 PM | Feedback Focus</h3>
+          <p className="font-semibold text-indigo-600 mb-2">Leader: Matt</p>
+          <p className="text-gray-600">Explain their voice matters. Show QR code for this app. <strong>Enforce 5-10 minutes of quiet time</strong> so everyone completes it.</p>
+        </div>
+
+        {/* 8:45 */}
+        <div className="bg-white p-4 rounded-xl border-l-4 border-blue-500 shadow-sm">
+          <h3 className="font-bold text-lg text-gray-900 mb-2">8:45 PM | Food & Fellowship</h3>
+          <p className="font-semibold text-indigo-600 mb-2">Leaders: Matt & Latoya</p>
+          <p className="text-gray-600">Matt blesses food. Play background music. <strong>Leader Focus:</strong> All leaders intentionally sit with students, especially newer/quieter ones, and connect organically.</p>
+        </div>
+
+        {/* 9:30 */}
+        <div className="bg-white p-4 rounded-xl border-l-4 border-rose-500 shadow-sm">
+          <h3 className="font-bold text-lg text-gray-900 mb-2">9:30 PM | Prizes & Closing</h3>
+          <p className="font-semibold text-indigo-600 mb-2">Leaders: Bethany, Jalesa, & Pastor Blair</p>
+          <ul className="list-disc pl-5 space-y-1 text-gray-600">
+            <li><strong>9:30:</strong> Bethany/Jalesa distribute grand prizes.</li>
+            <li><strong>9:35:</strong> Pastor Blair gives 2-3 min encouraging wrap-up & announces next date.</li>
+            <li><strong>9:40:</strong> Pastor Blair prays blessing and dismisses by 9:45 PM.</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  );
+
+  // --- SURVEY FORM COMPONENT ---
+  const SurveyForm = () => {
+    const [step, setStep] = useState('intro'); 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
+    const [formData, setFormData] = useState({
+      q1: '', q2: '', q3: '', q4: '', q5: '',
+      q6: '', q7: '', q8: '', q9: '', q10: '',
+      q11: '', q12: '', q13: '', q14: '', q15: ''
+    });
+
+    const handleInput = (e: any) => { setFormData(prev => ({ ...prev, [e.target.name]: e.target.value })); };
+    
+    const handleSubmit = async (e: any) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+      setError('');
+      try {
+        // Using Direct REST API via fetch instead of the Supabase library
+        const response = await fetch(`${supabaseUrl}/rest/v1/youth_connect_feedback`, {
+          method: 'POST',
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.message || 'Failed to submit feedback.');
+        }
+
+        setStep('success');
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || 'Error submitting feedback.');
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    if (step === 'success') return (
+      <div className="flex flex-col items-center justify-center text-center space-y-6 py-16 animate-in fade-in">
+        <CheckCircle className="w-16 h-16 text-green-500" />
+        <h2 className="text-2xl font-bold">Feedback Sent!</h2>
+        <p className="text-gray-500">Thank you for helping us make Youth Connect better.</p>
+        <button onClick={() => setStep('intro')} className="text-indigo-600 font-medium mt-4">Submit another</button>
+      </div>
+    );
+
+    if (step === 'intro') return (
+      <div className="flex flex-col items-center text-center space-y-6 py-10 animate-in fade-in">
+        <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-2">
+          <MessageSquare className="w-10 h-10 text-indigo-600" />
+        </div>
+        <h1 className="text-3xl font-extrabold text-gray-900">Have Your Say!</h1>
+        <p className="text-gray-600">Your honest feedback helps us make Youth Connect better, more engaging, and more relevant.</p>
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 w-full flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-amber-800 text-left"><strong>100% Anonymous.</strong> Please be honest, we are listening!</p>
+        </div>
+        <button onClick={() => setStep('survey')} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 mt-4">
+          Start Survey <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+    );
+
+    return (
+      <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in pb-12">
+        <h2 className="text-2xl font-bold text-gray-900">Your Feedback</h2>
+        
+        {/* Generate exactly 15 Questions to match your DB schema */}
+        {[
+          "1. On a scale of 1-5, how relevant do you feel the Youth Connect meetings are to your daily life?",
+          "2. What is the number one thing that would make you more excited to attend youth meetings?",
+          "3. Have you ever felt like this youth ministry wasn't a good fit for you? (If yes, why?)",
+          "4. What real-life issues or struggles do you think teenagers face today that the church needs to address?",
+          "5. What specific topics or discussions would actually help you grow closer to God right now?",
+          "6. What makes it difficult for you to participate or engage when you do attend?",
+          "7. Do you feel like you belong and have a community with the youth at our church?",
+          "8. How comfortable do you feel sharing your honest thoughts and questions during meetings?",
+          "9. Do you feel like your voice and ideas are genuinely heard in this youth ministry?",
+          "10. What types of activities, events, or hangout styles would you love to see us do more of?",
+          "11. Do you have any hobbies, talents, or interests that you wish we incorporated into our meetings?",
+          "12. Do you feel there are enough opportunities for you to use your personal gifts at church?",
+          "13. Would you be interested in helping plan future youth events or leading parts of a meeting?",
+          "14. What could the youth leaders do differently to support you and connect with you better?",
+          "15. If you were in charge of redesigning this youth ministry, what is the *one major thing* you would change?"
+        ].map((q, i) => (
+          <div key={`q${i+1}`} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+            <label className="block text-sm font-semibold text-gray-900 mb-3">{q}</label>
+            <textarea 
+              name={`q${i+1}`} value={(formData as any)[`q${i+1}`]} onChange={handleInput}
+              placeholder="Your honest answer..."
+              className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-600 resize-none min-h-[100px]"
+            />
+          </div>
+        ))}
+        {error && <div className="text-red-600 bg-red-50 p-3 rounded-lg text-sm">{error}</div>}
+        <button type="submit" disabled={isSubmitting} className="w-full bg-indigo-600 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2">
+          {isSubmitting ? 'Submitting...' : 'Submit Anonymous Feedback'} <Send className="w-5 h-5" />
+        </button>
       </form>
     );
   };
 
-  // --- ADMIN COMPONENTS ---
+  const ResultsDashboard = () => {
+    const [responses, setResponses] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-  const AdminLoginScreen = () => (
-    <form onSubmit={handleAdminLogin} className="flex flex-col items-center justify-center text-center space-y-6 py-10 px-4 animate-in fade-in">
-      <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-        <Lock className="w-10 h-10 text-slate-600" />
-      </div>
-      <h2 className="text-2xl font-extrabold text-slate-900">Leader Dashboard</h2>
-      <p className="text-sm text-slate-500">Enter the password to view survey results.</p>
-      
-      <input 
-        type="password" 
-        value={adminPassword}
-        onChange={(e) => setAdminPassword(e.target.value)}
-        placeholder="Password..."
-        className="w-full max-w-xs p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-600 text-center"
-      />
+    useEffect(() => {
+      const fetchResults = async () => {
+        try {
+          // Using Direct REST API via fetch
+          const response = await fetch(`${supabaseUrl}/rest/v1/youth_connect_feedback?select=*&order=created_at.desc`, {
+            method: 'GET',
+            headers: {
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json'
+            }
+          });
 
-      {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+          if (response.ok) {
+            const data = await response.json();
+            setResponses(data);
+          }
+        } catch (err) {
+          console.error("Failed to fetch results:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchResults();
+    }, []);
 
-      <div className="flex gap-3 w-full max-w-xs mt-2">
-        <button type="button" onClick={() => { setError(''); setStep(0); }} className="w-1/3 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-200 transition-colors">Back</button>
-        <button type="submit" className="w-2/3 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition-colors">Login</button>
-      </div>
-    </form>
-  );
+    if (loading) return <div className="text-center py-20 animate-pulse text-gray-500">Loading results...</div>;
 
-  const AdminDashboard = () => (
-    <div className="space-y-6 animate-in fade-in pb-12 w-full max-w-4xl mx-auto px-2">
-      {/* Print Header (Hidden on screen, visible on PDF) */}
-      <div className="hidden print:block text-center mb-8">
-        <h1 className="text-3xl font-bold">Youth Connect - Survey Results Report</h1>
-        <p className="text-gray-500">Generated on {new Date().toLocaleDateString()}</p>
-        <p className="text-gray-500">Total Responses: {surveyData.length}</p>
-      </div>
-
-      {/* Screen Header (Hidden on PDF) */}
-      <div className="print:hidden flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <div>
-          <h2 className="text-2xl font-extrabold text-slate-900">Survey Results</h2>
-          <p className="text-slate-500">{surveyData.length} Total Responses</p>
+    return (
+      <div className="space-y-6 pb-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Survey Results</h2>
+          <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-sm font-bold border">{responses.length} Submissions</span>
         </div>
-        <div className="flex flex-wrap gap-3 items-center">
-          <button 
-            onClick={() => setGroupingMode('by_question')}
-            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${groupingMode === 'by_question' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
-            <LayoutList className="w-4 h-4" /> Group by Question
-          </button>
-          <button 
-            onClick={() => setGroupingMode('by_respondent')}
-            className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 ${groupingMode === 'by_respondent' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          >
-            <Users className="w-4 h-4" /> Group by Person
-          </button>
-          <button onClick={handlePrint} className="bg-slate-900 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-slate-800 transition-colors ml-2">
-            <Printer className="w-4 h-4" /> Save as PDF
-          </button>
-          <button onClick={() => { setAdminPassword(''); setStep(0); }} className="text-slate-500 underline ml-2 text-sm hover:text-slate-700">Logout</button>
-        </div>
-      </div>
-
-      {error && <div className="p-4 bg-red-100 border border-red-200 text-red-700 rounded-xl font-medium">{error}</div>}
-      
-      {isLoadingData ? (
-        <div className="text-center py-20 flex flex-col items-center justify-center space-y-4">
-           <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
-           <p className="text-slate-500 font-medium animate-pulse">Loading responses from database...</p>
-        </div>
-      ) : surveyData.length === 0 ? (
-        <div className="text-center py-20 text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm">
-            <MessageSquare className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <p>No survey responses yet.</p>
-        </div>
-      ) : (
-        <div className="space-y-10">
-          
-          {groupingMode === 'by_question' && questionPages.flat().map((q, index) => {
-            // Filter out empty answers for cleaner reports
-            const answeredResponses = surveyData.filter(res => res[q.id] && res[q.id].trim() !== '');
-            
-            return (
-              <div key={q.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 print:shadow-none print:border-b print:rounded-none print:mb-8 print:break-inside-avoid">
-                <h3 className="font-bold text-lg text-indigo-900 mb-4 pb-2 border-b border-slate-100">{q.label}</h3>
-                
-                {answeredResponses.length === 0 ? (
-                  <p className="text-slate-400 italic">No answers provided yet.</p>
-                ) : (
-                  <ul className="space-y-3">
-                    {answeredResponses.map((res, i) => (
-                      <li key={i} className="flex gap-3 items-start bg-slate-50 p-4 rounded-xl print:bg-transparent print:p-2 print:border-l-2 print:border-slate-300">
-                        <span className="text-indigo-400 font-bold text-sm mt-0.5">#{i + 1}</span>
-                        <p className="text-slate-700 leading-relaxed">{res[q.id]}</p>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            );
-          })}
-
-          {groupingMode === 'by_respondent' && surveyData.map((res, index) => (
-            <div key={index} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 print:shadow-none print:border-b print:rounded-none print:mb-8 print:break-inside-avoid">
-              <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
-                <h3 className="font-bold text-lg text-slate-900">Anonymous Respondent #{index + 1}</h3>
-                <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                    {new Date(res.created_at).toLocaleDateString()}
-                </span>
-              </div>
-              
-              <div className="space-y-6">
-                {questionPages.flat().map((q) => (
-                  <div key={q.id}>
-                    <p className="font-semibold text-sm text-slate-600 mb-1">{q.label}</p>
-                    {res[q.id] && res[q.id].trim() !== '' ? (
-                       <p className="text-slate-800 bg-slate-50 p-3 rounded-xl border border-slate-100 print:bg-transparent print:p-0 print:border-none">{res[q.id]}</p>
-                    ) : (
-                       <p className="text-slate-400 italic text-sm">Skipped</p>
-                    )}
-                  </div>
+        
+        {responses.length === 0 ? (
+          <div className="text-center py-10 text-gray-500 bg-white rounded-xl border border-dashed">No responses yet.</div>
+        ) : (
+          <div className="space-y-10">
+            {Array.from({ length: 15 }).map((_, i) => (
+              <div key={`res-q${i+1}`} className="space-y-3">
+                <h3 className="font-bold text-gray-900 text-lg pb-2 border-b">Question {i + 1}</h3>
+                {responses.map((resp, idx) => (
+                  resp[`q${i+1}`] && (
+                    <div key={`r-${idx}`} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-gray-700 text-sm">
+                      {resp[`q${i+1}`]}
+                    </div>
+                  )
                 ))}
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
-        </div>
-      )}
-    </div>
-  );
+  // --- RENDER CURRENT TAB ---
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'youth': return <YouthOutline />;
+      case 'games': return <GamesGuide />;
+      case 'survey': return <SurveyForm />;
+      case 'results': return isAdminAuthenticated ? <ResultsDashboard /> : <AdminLogin />;
+      case 'leader': return isAdminAuthenticated ? <LeaderOutline /> : <AdminLogin />;
+      default: return <YouthOutline />;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-indigo-200 print:bg-white">
-      <div className={`${step >= 100 ? 'max-w-5xl' : 'max-w-md'} mx-auto w-full px-4 py-8 print:max-w-none print:p-0`}>
-        {step === 0 && IntroScreen()}
-        {step >= 1 && step <= 5 && SurveyPage()}
-        {step === 6 && SuccessScreen()}
-        {step === 99 && AdminLoginScreen()}
-        {step === 100 && AdminDashboard()}
-      </div>
+    <div className="min-h-screen bg-slate-50 font-sans pb-24">
+      {/* Main Content Area */}
+      <main className="max-w-md mx-auto w-full px-4 pt-6">
+        {renderContent()}
+      </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50">
+        <div className="max-w-md mx-auto flex justify-between items-center px-2 py-2">
+          
+          <button onClick={() => handleTabChange('youth')} className={`flex flex-col items-center p-2 rounded-xl min-w-[4rem] transition-colors ${activeTab === 'youth' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+            <Home className="w-6 h-6 mb-1" />
+            <span className="text-[10px] font-medium">Agenda</span>
+          </button>
+          
+          <button onClick={() => handleTabChange('games')} className={`flex flex-col items-center p-2 rounded-xl min-w-[4rem] transition-colors ${activeTab === 'games' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+            <Gamepad2 className="w-6 h-6 mb-1" />
+            <span className="text-[10px] font-medium">Games</span>
+          </button>
+          
+          <button onClick={() => handleTabChange('survey')} className={`flex flex-col items-center p-2 rounded-xl min-w-[4rem] transition-colors ${activeTab === 'survey' ? 'text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}>
+            <MessageSquare className="w-6 h-6 mb-1" />
+            <span className="text-[10px] font-medium">Survey</span>
+          </button>
+
+          <button onClick={() => handleTabChange('results')} className={`flex flex-col items-center p-2 rounded-xl min-w-[4rem] transition-colors ${activeTab === 'results' ? 'text-slate-900' : 'text-gray-400 hover:text-gray-600'}`}>
+            <BarChart3 className="w-6 h-6 mb-1" />
+            <span className="text-[10px] font-medium">Results</span>
+          </button>
+
+          <button onClick={() => handleTabChange('leader')} className={`flex flex-col items-center p-2 rounded-xl min-w-[4rem] transition-colors ${activeTab === 'leader' ? 'text-slate-900' : 'text-gray-400 hover:text-gray-600'}`}>
+            <ClipboardList className="w-6 h-6 mb-1" />
+            <span className="text-[10px] font-medium">Leaders</span>
+          </button>
+
+        </div>
+      </nav>
     </div>
   );
 }
