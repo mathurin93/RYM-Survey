@@ -18,7 +18,6 @@ const getEnvVar = (name: string, fallback: string = '') => {
 const supabaseUrl = getEnvVar('NEXT_PUBLIC_SUPABASE_URL', 'https://ivozbmooydyngwaxlsll.supabase.co');
 const supabaseKey = getEnvVar('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_BHjvmp2MLG8dGAtu_gFoiw_HyIeGb7W');
 
-
 // --- ADMIN AUTHENTICATION COMPONENT ---
 const AdminLogin = ({ onSuccess }: { onSuccess: () => void }) => {
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
@@ -75,7 +74,7 @@ const YouthOutline = () => (
       {[
         { time: "7:30 PM", title: "Gather & Snacks", desc: "Arrival time! Grab some snacks, find a seat, and hang out before we kick things off." },
         { time: "7:45 PM", title: "Welcome & Vision", desc: "Kicking off the night with prayer and a quick word on why we are here." },
-        { time: "7:55 PM", title: "Ice Breakers & Games", desc: "Bring your A-game! We have some wild challenges and real prizes on the line." },
+        { time: "7:55 PM", title: "Games & Challenges", desc: "Team Scavenger Hunts, Emoji puzzles, and TikTok acting challenges!" },
         { time: "8:30 PM", title: "Feedback Focus", desc: "Scan the QR code to fill out a quick survey on Matt's app. Tell us what you want to see!" },
         { time: "8:45 PM", title: "Food & Fellowship", desc: "Time to eat, hang out, and chill." },
         { time: "9:30 PM", title: "Wrap Up & Prizes", desc: "Final grand prizes are handed out, followed by closing remarks and prayer from Pastor Blair." },
@@ -99,36 +98,79 @@ const YouthOutline = () => (
 const GamesGuide = () => (
   <div className="space-y-8 animate-in fade-in duration-300 pb-8">
     <div className="space-y-2">
-      <h2 className="text-3xl font-extrabold text-gray-900">Game Rules</h2>
-      <p className="text-gray-500 text-sm">How to play tonight's challenges.</p>
+      <h2 className="text-3xl font-extrabold text-gray-900">Tonight's Games</h2>
+      <p className="text-gray-500 text-sm">Get ready for some friendly competition!</p>
     </div>
 
-    {/* Game 1 */}
-    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-      <h3 className="font-bold text-lg text-indigo-600 border-b pb-2">1. "Who Am I?" Sticky Note Mingle</h3>
-      <p className="text-sm text-gray-700"><strong>The Goal:</strong> Figure out which famous Bible character is stuck to your forehead/back.</p>
-      <p className="text-sm text-gray-700"><strong>The Rules:</strong> You must walk around the room and ask each other ONLY "Yes" or "No" questions (e.g., "Am I in the Old Testament?", "Am I a king?").</p>
-      <p className="text-sm font-bold text-amber-600 bg-amber-50 p-2 rounded-lg">Win: The first 3 people to correctly guess their character run to the leaders for a prize!</p>
-    </div>
-
-    {/* Game 2 */}
-    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-      <h3 className="font-bold text-lg text-indigo-600 border-b pb-2">2. Emoji Bible Stories</h3>
-      <p className="text-sm text-gray-700 mb-4"><strong>The Rules:</strong> First to shout out the correct Bible story for the emojis wins!</p>
-      <ul className="space-y-4 text-2xl bg-slate-50 p-4 rounded-xl text-center">
-        <li>🍎🐍👩👨</li>
-        <li>🦁🕳️🙏👨</li>
-        <li>🌊🚶‍♂️⛵😲</li>
-        <li>🍞🐟🐟🧺👦</li>
-        <li>🐋🏃‍♂️🤢🏖️</li>
-        <li>👦🌈🧥😠👦👦</li>
+    {/* Game 1: Scavenger Hunt */}
+    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+      <div className="border-b pb-3">
+        <h3 className="font-bold text-xl text-indigo-600">1. Team Scavenger Hunt</h3>
+        <p className="text-sm text-gray-600 mt-2"><strong>Rules:</strong> Break into teams of 4-5. Complete all the tasks below as fast as you can. Call over a leader to prove you finished!</p>
+      </div>
+      <ul className="space-y-4 text-sm text-gray-700">
+        <li className="flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full border-2 border-indigo-200 mt-0.5 flex-shrink-0"></div> 
+          <span className="font-medium text-base">Take a Team Selfie</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full border-2 border-indigo-200 mt-0.5 flex-shrink-0"></div> 
+          <span className="font-medium text-base">Come up with a team Motto</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full border-2 border-indigo-200 mt-0.5 flex-shrink-0"></div> 
+          <span className="font-medium text-base">Sing 10 Seconds of a Song</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full border-2 border-indigo-200 mt-0.5 flex-shrink-0"></div> 
+          <span className="font-medium text-base">Find a bible verse containing the word "faith"</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full border-2 border-indigo-200 mt-0.5 flex-shrink-0"></div> 
+          <span className="font-medium text-base">Find something everyone on the team has in common</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full border-2 border-indigo-200 mt-0.5 flex-shrink-0"></div> 
+          <span className="font-medium text-base">Create a team handshake</span>
+        </li>
+        <li className="flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full border-2 border-indigo-200 mt-0.5 flex-shrink-0"></div> 
+          <div className="w-full">
+            <span className="font-medium text-base">Complete the Bible Emoji game correctly:</span>
+            <div className="bg-slate-50 p-4 rounded-xl mt-3 space-y-3 text-center text-2xl border border-slate-100 shadow-inner">
+              <div>🍎🐍👩👨</div>
+              <div>🦁🕳️🙏👨</div>
+              <div>🌊🚶‍♂️⛵😲</div>
+              <div>🍞🐟🐟🧺👦</div>
+              <div>🐋🏃‍♂️🤢🏖️</div>
+              <div>👦🌈🧥😠👦👦</div>
+            </div>
+          </div>
+        </li>
+        <li className="flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full border-2 border-indigo-200 mt-0.5 flex-shrink-0"></div> 
+          <span className="font-medium text-base">Act out a Bible Story</span>
+        </li>
       </ul>
     </div>
 
-    {/* Game 3 */}
-    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-      <h3 className="font-bold text-lg text-indigo-600 border-b pb-2">3. Fact or Fiction: Bizarre Bible Edition</h3>
-      <p className="text-sm text-gray-700"><strong>The Rules:</strong> Stand in the middle. When the statement is read, run LEFT if it's a real Bible story (FACT), or RIGHT if it's made up (FICTION). Wrong guess = sit down. Last ones standing win grand prizes!</p>
+    {/* Game 2: TikTok Challenge */}
+    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+      <div className="border-b pb-3">
+        <h3 className="font-bold text-xl text-indigo-600">2. TikTok Challenges</h3>
+        <p className="text-sm text-gray-600 mt-2"><strong>Rules:</strong> In groups of 2-3, act out one of the phrases below. The BEST and most CREATIVE group wins a prize!</p>
+      </div>
+      <ul className="grid grid-cols-1 gap-2 mt-2 text-sm text-gray-800">
+        <li className="bg-amber-50 p-3 rounded-lg border border-amber-100 font-bold shadow-sm">✨ Walk by Faith, Not by Sight</li>
+        <li className="bg-amber-50 p-3 rounded-lg border border-amber-100 font-bold shadow-sm">🏋️ Carry Each other's Heavy Load</li>
+        <li className="bg-amber-50 p-3 rounded-lg border border-amber-100 font-bold shadow-sm">✝️ Carry your Cross</li>
+        <li className="bg-amber-50 p-3 rounded-lg border border-amber-100 font-bold shadow-sm">⏳ The Joy in Waiting</li>
+        <li className="bg-amber-50 p-3 rounded-lg border border-amber-100 font-bold shadow-sm">🙏 Pray Without Ceasing</li>
+        <li className="bg-amber-50 p-3 rounded-lg border border-amber-100 font-bold shadow-sm">👥 When Two or Three are Gathered</li>
+        <li className="bg-amber-50 p-3 rounded-lg border border-amber-100 font-bold shadow-sm">💪 The Joy of the Lord is your strength</li>
+        <li className="bg-amber-50 p-3 rounded-lg border border-amber-100 font-bold shadow-sm">❤️ We love him because he loved us first</li>
+        <li className="bg-amber-50 p-3 rounded-lg border border-amber-100 font-bold shadow-sm">🤝 Love your Enemies</li>
+      </ul>
     </div>
   </div>
 );
@@ -167,16 +209,9 @@ const LeaderOutline = () => (
       <div className="bg-white p-4 rounded-xl border-l-4 border-amber-500 shadow-sm">
         <h3 className="font-bold text-lg text-gray-900 mb-2">7:55 PM | Ice Breakers & Games</h3>
         <p className="font-semibold text-indigo-600 mb-2">Leaders: Bethany & Jalesa</p>
-        <div className="space-y-3 text-gray-600 mt-3">
-          <p><strong>Game 1: Who Am I?</strong> <br/>Prep: Write names (David, Esther, Moses, Peter, Goliath, Mary, Judas) on sticky notes. Place on backs/foreheads. Yes/No questions only.</p>
-          <p><strong>Game 2: Emoji Stories</strong> <br/>Adam/Eve, Daniel/Lions, Jesus/Water, Feeding 5000, Jonah, Joseph/Coat.</p>
-          <p><strong>Game 3: Fact or Fiction</strong> <br/>
-            - Eutychus falls from window (Fact - Acts 20)<br/>
-            - Healing blind with sand (Fiction - Mud/spit John 9)<br/>
-            - Talking donkey (Fact - Numbers 22)<br/>
-            - David uses flaming arrow (Fiction - Slingshot 1 Sam 17)<br/>
-            - Bald prophet/Bears (Fact - 2 Kings 2)
-          </p>
+        <div className="space-y-4 text-gray-600 mt-3">
+          <p><strong>Game 1: Team Scavenger Hunt</strong> <br/>Break youth into teams of 4-5. Have them open the app and complete the checklist. <strong>Verify their tasks:</strong> check their team selfies, songs, and handshakes as they finish! (Emoji Answers: Adam/Eve, Daniel/Lions, Jesus/Water, Feeding 5000, Jonah, Joseph/Coat).</p>
+          <p><strong>Game 2: TikTok Challenges</strong> <br/>Break into smaller groups of 2-3. Assign them one of the phrases from the app (or let them pick). They act it out, and you judge the most creative one for the prize.</p>
         </div>
       </div>
 
@@ -378,7 +413,6 @@ const ResultsDashboard = () => {
     </div>
   );
 };
-
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('youth'); // 'youth', 'games', 'survey', 'results', 'leader'
