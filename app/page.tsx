@@ -74,11 +74,12 @@ const YouthOutline = () => (
       {[
         { time: "7:30 PM", title: "Gather & Snacks", desc: "Arrival time! Grab some snacks, find a seat, and hang out before we kick things off." },
         { time: "7:45 PM", title: "Welcome & Vision", desc: "Kicking off the night with prayer and a quick word on why we are here." },
-        { time: "7:55 PM", title: "Games & Challenges", desc: "Team Scavenger Hunts, Emoji puzzles, and TikTok acting challenges!" },
-        { time: "8:30 PM", title: "Feedback Focus", desc: "Scan the QR code to fill out a quick survey on Matt's app. Tell us what you want to see!" },
-        { time: "8:45 PM", title: "Food & Fellowship", desc: "Time to eat, hang out, and chill." },
-        { time: "9:30 PM", title: "Wrap Up & Prizes", desc: "Final grand prizes are handed out, followed by closing remarks and prayer from Pastor Blair." },
-        { time: "9:45 PM", title: "Dismissal", desc: "See you next time!" }
+        { time: "7:55 PM", title: "Feedback Focus", desc: "Scan the QR code to fill out a quick survey on Matt's app. Tell us what you want to see!" },
+        { time: "8:00 PM", title: "Ice Breakers", desc: "Let's get warmed up with a quick ice breaker game to start the night." },
+        { time: "8:15 PM", title: "Team Building", desc: "Break into teams for our epic Scavenger Hunt and Emoji puzzles." },
+        { time: "8:35 PM", title: "Group Games & TikToks", desc: "Get into small groups and bring your best acting skills for the TikTok challenge!" },
+        { time: "8:55 PM", title: "Food & Fellowship", desc: "Time to eat, hang out, and chill." },
+        { time: "9:30 PM", title: "Prizes & Closing", desc: "Final grand prizes are handed out, followed by closing remarks, prayer, and dismissal." }
       ].map((item, idx) => (
         <div key={idx} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex gap-4 items-start">
           <div className="bg-indigo-50 text-indigo-700 font-bold px-3 py-1 rounded-lg text-sm whitespace-nowrap mt-1">
@@ -197,7 +198,7 @@ const LeaderOutline = () => (
 
       {/* 7:45 */}
       <div className="bg-white p-4 rounded-xl border-l-4 border-indigo-500 shadow-sm">
-        <h3 className="font-bold text-lg text-gray-900 mb-2">7:45 PM | Welcome, Vision & Prayer</h3>
+        <h3 className="font-bold text-lg text-gray-900 mb-2">7:45 PM | Welcome, Vision, Prayer</h3>
         <p className="font-semibold text-indigo-600 mb-2">Leaders: Matt & Latoya</p>
         <ul className="list-disc pl-5 space-y-1 text-gray-600">
           <li><strong>Action:</strong> Welcome students, set tone. Share vision (building community, faith, support).</li>
@@ -206,25 +207,36 @@ const LeaderOutline = () => (
       </div>
 
       {/* 7:55 */}
-      <div className="bg-white p-4 rounded-xl border-l-4 border-amber-500 shadow-sm">
-        <h3 className="font-bold text-lg text-gray-900 mb-2">7:55 PM | Ice Breakers & Games</h3>
-        <p className="font-semibold text-indigo-600 mb-2">Leaders: Bethany & Jalesa</p>
-        <div className="space-y-4 text-gray-600 mt-3">
-          <p><strong>Game 1: Team Scavenger Hunt</strong> <br/>Break youth into teams of 4-5. Have them open the app and complete the checklist. <strong>Verify their tasks:</strong> check their team selfies, songs, and handshakes as they finish! (Emoji Answers: Adam/Eve, Daniel/Lions, Jesus/Water, Feeding 5000, Jonah, Joseph/Coat).</p>
-          <p><strong>Game 2: TikTok Challenges</strong> <br/>Break into smaller groups of 2-3. Assign them one of the phrases from the app (or let them pick). They act it out, and you judge the most creative one for the prize.</p>
-        </div>
-      </div>
-
-      {/* 8:30 */}
       <div className="bg-white p-4 rounded-xl border-l-4 border-emerald-500 shadow-sm">
-        <h3 className="font-bold text-lg text-gray-900 mb-2">8:30 PM | Feedback Focus</h3>
+        <h3 className="font-bold text-lg text-gray-900 mb-2">7:55 PM | Feedback Focus</h3>
         <p className="font-semibold text-indigo-600 mb-2">Leader: Matt</p>
-        <p className="text-gray-600">Explain their voice matters. Show QR code for this app. <strong>Enforce 5-10 minutes of quiet time</strong> so everyone completes it.</p>
+        <p className="text-gray-600">Explain their voice matters. Show QR code for this app. <strong>Enforce 5 minutes of quiet time</strong> so everyone completes it before getting crazy with games. Any extra time from the intro flows into this.</p>
       </div>
 
-      {/* 8:45 */}
+      {/* 8:00 */}
+      <div className="bg-white p-4 rounded-xl border-l-4 border-amber-500 shadow-sm">
+        <h3 className="font-bold text-lg text-gray-900 mb-2">8:00 PM | Ice Breakers</h3>
+        <p className="font-semibold text-indigo-600 mb-2">Leaders: Bethany & Jalesa</p>
+        <p className="text-gray-600">Quick warm-up activity to get everyone moving and comfortable before the main team building begins.</p>
+      </div>
+
+      {/* 8:15 */}
+      <div className="bg-white p-4 rounded-xl border-l-4 border-orange-500 shadow-sm">
+        <h3 className="font-bold text-lg text-gray-900 mb-2">8:15 PM | Team Building (Scavenger Hunt)</h3>
+        <p className="font-semibold text-indigo-600 mb-2">Leaders: Bethany & Jalesa</p>
+        <p className="text-gray-600">Break youth into teams of 4-5. Have them open the app and complete the Scavenger Hunt checklist. <strong>Verify their tasks:</strong> check their selfies, songs, and handshakes! (Emoji Answers: Adam/Eve, Daniel/Lions, Jesus/Water, Feeding 5000, Jonah, Joseph/Coat).</p>
+      </div>
+
+      {/* 8:35 */}
+      <div className="bg-white p-4 rounded-xl border-l-4 border-pink-500 shadow-sm">
+        <h3 className="font-bold text-lg text-gray-900 mb-2">8:35 PM | Group Games & TikToks</h3>
+        <p className="font-semibold text-indigo-600 mb-2">Leaders: Bethany & Jalesa</p>
+        <p className="text-gray-600">Break into smaller groups of 2-3. Assign them a phrase from the app. They act it out, and leaders judge the most creative group for the prize.</p>
+      </div>
+
+      {/* 8:55 */}
       <div className="bg-white p-4 rounded-xl border-l-4 border-blue-500 shadow-sm">
-        <h3 className="font-bold text-lg text-gray-900 mb-2">8:45 PM | Food & Fellowship</h3>
+        <h3 className="font-bold text-lg text-gray-900 mb-2">8:55 PM | Food & Fellowship</h3>
         <p className="font-semibold text-indigo-600 mb-2">Leaders: Matt & Latoya</p>
         <p className="text-gray-600">Matt blesses food. Play background music. <strong>Leader Focus:</strong> All leaders intentionally sit with students, especially newer/quieter ones, and connect organically.</p>
       </div>
@@ -232,11 +244,11 @@ const LeaderOutline = () => (
       {/* 9:30 */}
       <div className="bg-white p-4 rounded-xl border-l-4 border-rose-500 shadow-sm">
         <h3 className="font-bold text-lg text-gray-900 mb-2">9:30 PM | Prizes & Closing</h3>
-        <p className="font-semibold text-indigo-600 mb-2">Leaders: Bethany, Jalesa, & Pastor Blair</p>
+        <p className="font-semibold text-indigo-600 mb-2">Leaders: Pastor Blair, Bethany, & Jalesa</p>
         <ul className="list-disc pl-5 space-y-1 text-gray-600">
-          <li><strong>9:30:</strong> Bethany/Jalesa distribute grand prizes.</li>
-          <li><strong>9:35:</strong> Pastor Blair gives 2-3 min encouraging wrap-up & announces next date.</li>
-          <li><strong>9:40:</strong> Pastor Blair prays blessing and dismisses by 9:45 PM.</li>
+          <li><strong>Prizes:</strong> Bethany/Jalesa distribute grand prizes for the games.</li>
+          <li><strong>Wrap Up:</strong> Pastor Blair gives 2-3 min encouraging wrap-up & announces next date.</li>
+          <li><strong>Dismissal:</strong> Pastor Blair prays blessing and dismisses youth (aiming for 9:45 PM hard stop).</li>
         </ul>
       </div>
 
